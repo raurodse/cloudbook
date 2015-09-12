@@ -150,11 +150,9 @@ Backend.prototype.loadSectionsObjects = function() {
  */
 Backend.prototype.loadComponentExtraScripts = function loadComponentExtraScripts(pluginpath,infobutton) {
   if (infobutton.hasOwnProperty('external_scripts')) {
-      var fs = require('fs');
       var path = require('path');
       infobutton['external_scripts'].forEach(function(scriptpath){
-        var script = fs.readFileSync("./"+ path.join(pluginpath,scriptpath),'utf8');
-        eval(script);
+        document.write( '<script type="text/javascript" src="./' + path.join(pluginpath,scriptpath) + '"><\/script>' );
       });
   } 
 };
