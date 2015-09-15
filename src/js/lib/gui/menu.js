@@ -307,8 +307,7 @@
         label : CBI18n.gettext(description.label),
         click : function generateElement(){
           var fullobject = new Cloudbook.Actions[component]['component']();
-          var controller = application.controller.getInstance();
-          fullobject.clickButton(controller);
+          fullobject.clickButton();
         }
       };
       catobj[category].push(new gui.MenuItem(aux));

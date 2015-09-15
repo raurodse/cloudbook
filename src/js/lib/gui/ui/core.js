@@ -114,8 +114,7 @@ UI.prototype.defaultToolbar = function defaultToolbar() {
  */
  UI.prototype.getCBObjectFromButton = function getCBObjectFromButton(component) {
   var fullobject = new Cloudbook.Actions[component]['component']();
-  var controller = application.controller.getInstance();
-  fullobject.clickButton(controller);
+  fullobject.clickButton();
 };
 
 /**
@@ -235,7 +234,7 @@ UI.prototype.setTitleName = function(text) {
 
 UI.prototype.addCBObject = function addCBObject(jquerycbo,cbobject) {
   $(Cloudbook.UI.targetcontent).append(jquerycbo);
-  cbobject.triggerAddEditorView(jquerycbo,cbobject);
+  cbobject.triggerAddEditorView(jquerycbo);
 };
 
 UI.prototype.removeCBObjectById = function removeCBObjectById(cbobjectid) {

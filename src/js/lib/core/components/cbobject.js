@@ -103,23 +103,21 @@ CBObject.prototype.epubView = function epubView() {
 /**
  * This string is return core to bind on button click event on editor view
  * @param {jQuery} jquerycbo jQuery representation object that is included on targetcontent
- * @param {CBOjbect} objectcbo CBObject that is stored on the project to later load project or export to other format.
  * @return {String} Function string.
  */
-CBObject.prototype.triggerAddEditorView = function triggerAddEditorView(jquerycbo,objectcbo) {
-	//var x = jquerycbo.get()[0];
-	//x.addEventListener('click',enableEditable);
-	jquerycbo.resizable({stop: function(event,ui){ objectcbo.size = [ui.size.width,ui.size.height]}});
-	jquerycbo.rotatable({stop:function(event,ui){ objectcbo.degree = ui.angle.current},angle:objectcbo.degree});
-	objectcbo.enableHotkeysDelete();
+CBObject.prototype.triggerAddEditorView = function triggerAddEditorView(jquerycbo) {
+	var _this = this;
+	jquerycbo.resizable({stop: function(event,ui){ _this.size = [ui.size.width,ui.size.height]}});
+	jquerycbo.rotatable({stop:function(event,ui){ _this.degree = ui.angle.current},angle:_this.degree});
+	this.enableHotkeysDelete();
 };
 
 CBObject.prototype.enableHotkeysDelete = function enableHotkeysDelete() {
-	var that = this;
-	var jquerycbo = $(Cloudbook.UI.targetcontent + " [data-cbobjectid='"+that.uniqueid+"']");
+	var _this = this;
+	var jquerycbo = $(Cloudbook.UI.targetcontent + " [data-cbobjectid='"+this.uniqueid+"']");
 	function _deleteObject(e){
 		if(!jquerycbo.attr('disablehotkey')){
-			that.deleteDialog(that);
+			_this.deleteDialog(_this);
 			$(Cloudbook.UI.targetcontent).trigger("click");
 		}	
 	}
@@ -127,8 +125,9 @@ CBObject.prototype.enableHotkeysDelete = function enableHotkeysDelete() {
 	jquerycbo.bind('keydown','backspace',_deleteObject);
 };
 
-CBObject.prototype.clickButton = function clickButton(controllerClass) {
-	controllerClass.addCBObjectIntoSelectedSection(this.editorView(),this);
+CBObject.prototype.clickButton = function clickButton(	) {
+	var controller = application.controller.getInstance();
+	controller.addCBObjectIntoSelectedSection(this.editorView(),this);
 };
 
 CBObject.prototype.editButton = function editButton(e) {
@@ -162,8 +161,9 @@ CBObject.prototype.editButton = function editButton(e) {
 
 
 CBObject.prototype.forwardButton = function forwardButton(e) {
-	var that = e.data.that;
-	var controller = application.controller.getInstance();
+	var that = e.data.that,
+		controller = application.controller.getInstance();
+	
 	controller.modifyObjectLevelLayer(that.uniqueid,that.levellayer + 1);
 	e.stopPropagation();
 };
