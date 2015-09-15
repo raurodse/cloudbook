@@ -33,16 +33,18 @@ CBObject.prototype.editorView = function editorView() {
 
 CBObject.prototype.getObject = function getObject(){
 	var aux = $(window.document.createElement('div')),
-		cbcontainer = $(window.document.createElement('div')).addClass('cbcontainer'),
-		that = this;
+		cbcontainer = $(window.document.createElement('div')).addClass('cbcontainer');
+
 	this.setDefaultClass(aux);
 	this.setDefaultStyles(aux);
 	this.setDefaultData(aux);
+
 	if(window.debugMode){
 		aux.append("<div>"+this.uniqueid+"</div>");
 	}
-	aux.append([cbcontainer]);
-	aux.click({that:this},that.enableEditable);
+
+	aux.append(cbcontainer);
+	aux.click({that:this},this.enableEditable);
 	return aux;
 }
 
