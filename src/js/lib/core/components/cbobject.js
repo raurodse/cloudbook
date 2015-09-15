@@ -7,57 +7,70 @@
  * @class CBObject
  */
 function CBObject(objectdata){
-	this.position = typeof objectdata.position !== 'undefined' ? objectdata.position : [200,200];
-	this.size = typeof objectdata.size !== 'undefined' ? objectdata.size : [200,50];
-	this.idtype = typeof objectdata.idtype !== 'undefined' ? objectdata.idtype : "CBObject";
-	this.uniqueid = typeof objectdata.uniqueid !== 'undefined' ? objectdata.uniqueid : CBUtil.uniqueId();
-	this.levellayer = typeof objectdata.levellayer !== 'undefined' ? objectdata.levellayer : 0;
-	this.degree = typeof objectdata.degree !== 'undefined' ? objectdata.degree : 0;
-	this.settimeoutlist = {};
+	var defaultValues = {
+		position : [200,200],
+		size : [200,50],
+		idtype : "CBObject",
+		uniqueid : CBUtil.uniqueid(),
+		levellayer : 0,
+		degree : 0,
+		settimeoutlist : {} 
+	};
+	var _this = this;
+	objectdata = $.extend({},defaultValues,objectdata);
+	Object.keys(objectdata).forEach(function asignValuesToObject(key){
+		_this[key] = objectdata[key];
+	});
 }
-
 
 /**
  * Render object to jQuery object to be included on page
  * @return {jQuery}
  */
 CBObject.prototype.editorView = function editorView() {
-	
-	//aux.mousedown({that:this},that.delaymove);
-	//aux.mouseup({that:this},that.cleardelay);
 	return this.getObject();
 };
 
 CBObject.prototype.getObject = function getObject(){
-	var aux = $(window.document.createElement('div'));
-	var cbcontainer = $(window.document.createElement('div')).addClass('cbcontainer');
-	var that = this;
-	aux.css('left', this.position[0])
-	   .css('top', this.position[1])
-	   .addClass('cbobject')
-	   .addClass('cbobject-editable')
-	   .attr('tabindex','-1')
-	   .attr('data-cbobjectid',this.uniqueid)
-	   .css('position','absolute')
-	   .css('z-index',this.levellayer)
-	   .css('transform',"rotate("+this.degree+"rad)")
-	   .css('-ms-transform',"rotate("+this.degree+"rad)")
-	   .css('-webkit-transform',"rotate("+this.degree+"rad)")
-	   .css('-moz-transform',"rotate("+this.degree+"rad)")
-	   .css('-o-transform',"rotate("+this.degree+"rad)")
-	   .css('width',this.size[0].toString() + "px")
-	   .css('height',this.size[1].toString() + "px" );
+	var aux = $(window.document.createElement('div')),
+		cbcontainer = $(window.document.createElement('div')).addClass('cbcontainer'),
+		that = this;
+	this.setDefaultClass(aux);
+	this.setDefaultStyles(aux);
+	this.setDefaultData(aux);
 	if(window.debugMode){
 		aux.append("<div>"+this.uniqueid+"</div>");
 	}
 	aux.append([cbcontainer]);
 	aux.click({that:this},that.enableEditable);
-	//aux.on('changesection',function(e){e.preventDefault(); console.log(e)});
-	//aux.mousedown({that:this},that.delaymove);
-	//aux.mouseup({that:this},that.cleardelay);
 	return aux;
 }
 
+
+CBObject.prototype.setDefaultClass = function setDefaultClass($viewObject) {
+	$viewObject.addClass('cbobject')
+	   		   .addClass('cbobject-editable');
+};
+
+CBObject.prototype.setDefaultStyles = function setDefaultStyles($viewObject) {
+
+	$viewObject.css('left', this.position[0])
+			   .css('top', this.position[1])
+			   .css('position','absolute')
+			   .css('z-index',this.levellayer)
+			   .css('transform',"rotate("+this.degree+"rad)")
+			   .css('-ms-transform',"rotate("+this.degree+"rad)")
+			   .css('-webkit-transform',"rotate("+this.degree+"rad)")
+			   .css('-moz-transform',"rotate("+this.degree+"rad)")
+			   .css('-o-transform',"rotate("+this.degree+"rad)")
+			   .css('width',this.size[0].toString() + "px")
+			   .css('height',this.size[1].toString() + "px" );	
+};
+
+CBObject.prototype.setDefaultData = function setDefaultData($viewObject) {
+	$viewObject.attr('tabindex','-1')
+	   		   .attr('data-cbobjectid',this.uniqueid);
+};
 
 /**
  * Render object to jQuery object to be exported to html
