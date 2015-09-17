@@ -230,49 +230,64 @@ function processBlock(element, filePath, blockName, idsectionselected,that)
  */
 ImportHTML.prototype.processHTML = function processHTML(data, filePath, idsectionselected,options)
 {
-	var that = this;
+	var _this = this;
 	var opt = $.extend({},options);
 	var controller = application.controller.getInstance();
 
 	
 	setTimeout(function(){
-		var temp = $('<iframe id="tempImportHTML" width="100%" height="100%" ;/>');
-		temp.css("position", "fixed").css("z-index","-1000");
-		$("body").append(temp);
-		temp.contents().find("html").html(data);
-		$("body").append("<div id='layer' style='z-index:-500;background:#fff; position:fixed; top:0; width:100%;height:100%'></div>");
 		var contenttoprocess = "";
-		if (typeof options !== 'undefined'){
-			if(typeof options.idtoprocess !== 'undefined'){
-				if(temp.contents().find(options.idtoprocess)[0] == undefined){
-					if(data.indexOf(options.idtoprocess.replace("#", "")) != -1){
-						contenttoprocess = temp.contents().get()[0].children[0];
-					}
-				}else{
-					contenttoprocess = temp.contents().find(options.idtoprocess)[0];
-				}	
-			}
-			if(typeof options.isELP !== 'undefined'){
-				contenttoprocess = temp.contents().get()[0].children[0].childNodes[1];
-			}	
-		}
-		else{			
-			if ( $('#tempImportHTML').contents().find("body").length == 0 ) {
-				contenttoprocess = temp.contents().get()[0].children[0];
-			}
-			else{
-				contenttoprocess = temp.contents().get()[0].children[0].childNodes[2];
-			}
-		}
-		processBlock(contenttoprocess,filePath, null,idsectionselected,that);
+
+		_this.createInvisibleFramework(data);
+		contenttoprocess = _this.getContentFromHTML(options);
+		processBlock(contenttoprocess,filePath, null,idsectionselected,_this);
+		
+		_this.destroyInvisibleFramework();
+
 		var ui = application.ui.core.getInstance();
-		$('#tempImportHTML').remove();
-		$('#layer').remove();
-		debugger;
 		ui.loadContent(Cloudbook.UI.selected.attr('data-cbsectionid'));
 	}, 500);
 	controller.renumberProject();
 
 }
+
+
+ImportHTML.prototype.getContentFromHTML = function getContentFromHTML(options) {
+    if (typeof options !== 'undefined') {
+        if (typeof options.idtoprocess !== 'undefined') {
+            if (temp.contents().find(options.idtoprocess)[0] == undefined) {
+                if (data.indexOf(options.idtoprocess.replace("#", "")) != -1) {
+                    contenttoprocess = temp.contents().get()[0].children[0];
+                }
+            } else {
+                contenttoprocess = temp.contents().find(options.idtoprocess)[0];
+            }
+        }
+        if (typeof options.isELP !== 'undefined') {
+            contenttoprocess = temp.contents().get()[0].children[0].childNodes[1];
+        }
+    } else {
+        if ($('#tempImportHTML').contents().find("body").length == 0) {
+            contenttoprocess = temp.contents().get()[0].children[0];
+        } else {
+            contenttoprocess = temp.contents().get()[0].children[0].childNodes[2];
+        }
+    }
+
+};
+
+ImportHTML.prototype.createInvisibleFramework = function(data) {
+	var temp = $('<iframe id="tempImportHTML" width="100%" height="100%" ;/>');
+	temp.css("position", "fixed").css("z-index","-1000");
+	$("body").append(temp);
+	temp.contents().find("html").html(data);		
+	$("body").append("<div id='layer' style='z-index:-500;background:#fff; position:fixed; top:0; width:100%;height:100%'></div>");
+};
+
+ImportHTML.prototype.destroyInvisibleFramework = function() {
+	$('#tempImportHTML').remove();
+	$('#layer').remove();
+};
+
 CBUtil.createNameSpace('application.importhtml');
 application.importhtml = CBUtil.singleton(ImportHTML);

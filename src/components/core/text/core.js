@@ -186,13 +186,11 @@ TextBox.prototype.handlerExtraCommands = function handlerExtraCommands(command) 
     });
     $('#inputFullSize').each(function(idx,o){
         $(o).click(function(e){
-//          debugger;
           e.stopPropagation();
         });
     });
     $('#inputWithHeader').each(function(idx,o){
         $(o).click(function(e){
-//          debugger;
           e.stopPropagation();
         });
     });
