@@ -5,11 +5,15 @@ var metadata = require( "./"+__module_path__ + 'metadata.json');
 var mime = require("./"+__module_path__ + 'lib_external/mime');
 
 function AudioBox(objectdata){
-  objectdata = typeof objectdata !== 'undefined' ? objectdata : {"audiopath":null,"audioformat":"audio/mpeg", "position" : [200,200], "size":[250,100]};
-  objectdata.idtype = metadata['idtype'];
+  var defaultValues = {
+        idtype : metadata['idtype'],
+        audiopath:null,
+        audioformat : "audio/mpeg",
+        size:[250,100]
+      };
+
+  objectdata = $.extend({},defaultValues,objectdata);
   AudioBox.super_.call(this,objectdata);
-  this.audiopath = objectdata.audiopath;
-  this.audioformat = objectdata.audioformat;
 }
 
 util.inherits(AudioBox,CBobject);

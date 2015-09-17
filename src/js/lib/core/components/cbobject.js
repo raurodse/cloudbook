@@ -11,7 +11,7 @@ function CBObject(objectdata){
 		position : [200,200],
 		size : [200,50],
 		idtype : "CBObject",
-		uniqueid : CBUtil.uniqueid(),
+		uniqueid : CBUtil.uniqueId(),
 		levellayer : 0,
 		degree : 0,
 		settimeoutlist : {} 
@@ -97,8 +97,6 @@ CBObject.prototype.epubView = function epubView() {
 	
 	return aux;
 }
-
-
 
 /**
  * This string is return core to bind on button click event on editor view
