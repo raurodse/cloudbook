@@ -132,6 +132,7 @@ function processElementBlock(node, filePath, idsectionselected)
 
 	if(candidates.length > 0)
 	{
+		debugger;
 		var element = new Cloudbook.Actions[candidates[0]]['component']();
 		if(Cloudbook.Actions[candidates[0]].path.indexOf("core/text") != -1)
 			node = extractElements(node, filePath, idsectionselected);
@@ -155,15 +156,16 @@ function processBlock(element, filePath, blockName, idsectionselected,that)
 	var backend = application.backend.core.getInstance();
 	for(var node = element.firstChild; node; node = node.nextSibling){
 		candidates = [];
-		if(node.tagName != undefined)
+		if(node.tagName !== undefined)
 		{
 			switch(node.tagName)
 			{
 				case "SECTION":case "ARTICLE":case "NAV":case "DIV": case "ASIDE":case "MAIN":
-					var width = node.clientWidth;
-				    var height = node.clientHeight;
-				    var left = node.offsetLeft;
-				    var top = node.offsetTop;
+					var elementPosition = node.getBoundingClientRect();
+					var width = elementPosition.width;
+				    var height = elementPosition.height;
+				    var left = elementPosition.left;
+				    var top = elementPosition.top;
 				    var text = "";
 					text = processBlock(node, filePath, node.tagName,idsectionselected,that);
 					if(node.parentElement.tagName =="HEADER" || node.parentElement.tagName =="FOOTER" ||
@@ -274,10 +276,10 @@ ImportHTML.prototype.getContentFromHTML = function(invisibleFramework, options) 
 
 ImportHTML.prototype.createInvisibleFramework = function createInvisibleFramework(data) {
     var temp = $('<iframe id="tempImportHTML" width="100%" height="100%" ;/>');
-    temp.css("position", "fixed").css("z-index", "-1000");
+    temp.css("position", "fixed").css("z-index", "1000");
     $("body").append(temp);
     temp.contents().find("html").html(data);
-    $("body").append("<div id='layer' style='z-index:-500;background:#fff; position:fixed; top:0; width:100%;height:100%'></div>");
+    $("body").append("<div id='layer' style='z-index:500;background:#fff; position:fixed; top:0; width:100%;height:100%'></div>");
     return temp;
 };
 
