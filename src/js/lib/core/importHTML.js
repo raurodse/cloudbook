@@ -239,7 +239,6 @@ ImportHTML.prototype.processHTML = function processHTML(data, filePath, idsectio
 	setTimeout(function(){
 		var temp = _this.createInvisibleFramework(data);
 		var contenttoprocess = _this.getContentFromHTML(temp,options);
-
 		processBlock(contenttoprocess,filePath, null,idsectionselected,_this);
 		var ui = application.ui.core.getInstance();
 		_this.destroyInvisibleFramework();
@@ -250,24 +249,27 @@ ImportHTML.prototype.processHTML = function processHTML(data, filePath, idsectio
 }
 
 ImportHTML.prototype.getContentFromHTML = function(invisibleFramework, options) {
-    if (typeof options !== 'undefined') {
-        if (typeof options.idtoprocess !== 'undefined') {
-            if (invisibleFramework.contents().find(options.idtoprocess)[0] == undefined) {
-                if (data.indexOf(options.idtoprocess.replace("#", "")) != -1) {
-                    contenttoprocess = invisibleFramework.contents().get()[0].children[0];
+	var contenttoprocess;
+	var contentFiltredBySelector = invisibleFramework.contents().find(options.idtoprocess)[0];
+	var allContentFromInvisibleFramework = invisibleFramework.contents().get()[0].children[0];
+    if (options) {
+        if (options.idtoprocess) {
+            if (invisibleFramework.contents().find(options.idtoprocess)[0] === undefined) {
+                if (data.indexOf(options.idtoprocess.replace("#", "")) !== -1) {
+                    contenttoprocess = allContentFromInvisibleFramework;
                 }
             } else {
                 contenttoprocess = invisibleFramework.contents().find(options.idtoprocess)[0];
             }
         }
-        if (typeof options.isELP !== 'undefined') {
-            contenttoprocess = invisibleFramework.contents().get()[0].children[0].childNodes[1];
+        if (options.isELP) {
+            contenttoprocess = allContentFromInvisibleFramework.childNodes[1];
         }
     } else {
-        if ($('#tempImportHTML').contents().find("body").length == 0) {
-            contenttoprocess = invisibleFramework.contents().get()[0].children[0];
+        if (invisibleFramework.contents().find("body").length === 0) {
+            contenttoprocess = allContentFromInvisibleFramework;
         } else {
-            contenttoprocess = invisibleFramework.contents().get()[0].children[0].childNodes[2];
+            contenttoprocess = allContentFromInvisibleFramework.childNodes[2];
         }
     }
     return contenttoprocess;
