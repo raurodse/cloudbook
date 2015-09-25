@@ -424,13 +424,13 @@ function processChildren(node, idsection, filePath)
 	temp.css("position", "fixed").css("z-index","-1000");
 	$("body").append(temp);
 	$("body").append("<div id='layer' style='z-index:-500;background:#fff; position:fixed; top:0; width:100%;height:100%'></div>");
-
 	if(node.prop("tagName") == "LIST" && node.prev().attr("value") == "idevices"){
 	    node.children().each(function(){
 	    	var contentSection = processELPNode($(this), filePath, idsection);
 	    	if(contentSection != undefined && contentSection.innerHTML != "<P></P>")
-				$("#tempImportELP").contents().find("html").append(contentSection.innerHTML);
+				$("#tempImportELP").contents().find("body").append(contentSection.innerHTML);
 		});
+
 		var options = $.parseJSON('{"isELP":'+ true + '}');
 		if($("#tempImportELP").contents().find("html").html() != "<head></head><body></body>")
 			importationHTML.processHTML($("#tempImportELP").contents().find("html").html(), filePath, idsection, options);
@@ -473,7 +473,7 @@ function processChildren(node, idsection, filePath)
 							contentSection = processELPNode(nodeReferenced, filePath, idsectionAux);
 						}
 						if(contentSection.innerHTML != "<P></P>")
-							$("#tempImportELP").contents().find("html").append(contentSection.innerHTML);					
+							$("#tempImportELP").contents().find("body").append(contentSection.innerHTML);					
 					});
 					var options = $.parseJSON('{"isELP":'+ true + '}');
 					importationHTML.processHTML($("#tempImportELP").contents().find("html").html(), filePath, idsectionAux, options);

@@ -5,7 +5,7 @@
  */
 function ImportHTML(){
 	this.topValue = 0;
-	this.blockText = "";
+	this.blockText = document.createElement('div');
 	this.textCandidates = getTextTags();
 }
 
@@ -66,7 +66,7 @@ function getTextTags()
 
  */
 function extractElements(element, filePath, idsectionselected){
-
+	debugger;
 	try{
 		$(element).find("img, iframe, video, audio, object").each(function(){
 		  	processElementBlock($(this)[0], filePath, idsectionselected);
@@ -167,6 +167,7 @@ function processBlock(element, filePath, blockName, idsectionselected,that)
 				    var left = elementPosition.left;
 				    var top = elementPosition.top;
 				    var text = "";
+				    debugger;
 					text = processBlock(node, filePath, node.tagName,idsectionselected,that);
 					if(node.parentElement.tagName =="HEADER" || node.parentElement.tagName =="FOOTER" ||
 						node.parentElement.nodeName == "BODY" || (node.parentElement.parentElement != null && 
@@ -175,7 +176,7 @@ function processBlock(element, filePath, blockName, idsectionselected,that)
 					{
 						if(text != ""){
 							processTextBlock(text, width, height, top, left, filePath, idsectionselected);
-							that.blockText = "";
+							that.blockText = document.createElement("div");
 							text = "";
 						}
 					}
@@ -189,7 +190,7 @@ function processBlock(element, filePath, blockName, idsectionselected,that)
 						if(node.children.length ==1 && node.children[0].nodeName == "IMG" && node.childNodes.length == 1)
 							processElementBlock(node.children[0], filePath, idsectionselected);
 						else
-							that.blockText  += "<" + node.tagName + ">" + node.innerHTML + "</" + node.tagName + ">";
+							that.blockText.appendChild(node);
 					}
 					else
 					{
@@ -205,12 +206,16 @@ function processBlock(element, filePath, blockName, idsectionselected,that)
 		{
 			if(node.nodeType != 8 && node.nodeValue.trim().length > 0)
 			{
-				if(blockName != null)
-					that.blockText  += "<SPAN>" + node.nodeValue + "</SPAN><br>";
+				if(blockName != null){
+					var auxNode = document.createElement('span');
+					auxNode.innerHTML = node.nodeValue;
+					that.blockText.appendChild(auxNode);
+					that.blockText.appendChild(document.createElement('br'));
+				}
 				else
 				{
 					processTextBlock(node.nodeValue, width, height, top, left, filePath, idsectionselected);
-					that.blockText = "";
+					that.blockText = document.createElement('div');
 					text = "";
 				}
 			}
@@ -237,6 +242,7 @@ ImportHTML.prototype.processHTML = function processHTML(data, filePath, idsectio
 
 	
 	setTimeout(function(){
+		debugger;
 		var temp = _this.createInvisibleFramework(data);
 		var contenttoprocess = _this.getContentFromHTML(temp,options);
 		processBlock(contenttoprocess,filePath, null,idsectionselected,_this);
@@ -278,10 +284,10 @@ ImportHTML.prototype.getContentFromHTML = function(invisibleFramework, options) 
 
 ImportHTML.prototype.createInvisibleFramework = function createInvisibleFramework(data) {
     var temp = $('<iframe id="tempImportHTML" width="100%" height="100%" ;/>');
-    temp.css("position", "fixed").css("z-index", "1000");
+    temp.css("position", "fixed").css("z-index", "-1000");
     $("body").append(temp);
     temp.contents().find("html").html(data);
-    $("body").append("<div id='layer' style='z-index:500;background:#fff; position:fixed; top:0; width:100%;height:100%'></div>");
+    $("body").append("<div id='layer' style='z-index:-500;background:#fff; position:fixed; top:0; width:100%;height:100%'></div>");
     return temp;
 };
 
