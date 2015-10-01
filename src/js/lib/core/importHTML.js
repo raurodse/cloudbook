@@ -141,6 +141,20 @@ function processElementBlock(node, filePath, idsectionselected)
 	}
 }
 
+function checkOnlyTextNodes(node){
+	debugger;
+	var ignoreNodes = [2,4,5,6,7,8,10,12];
+	if(ignoreNodes.indexOf(node.nodeType) >= 0 || node.nodeType === 3 ) return true;
+	var listNodes = node.childNodes;
+	var i;
+	if (listNodes.length === 0) return false;
+	for(i = 0; i < listNodes.length ; i++){
+		if (!checkOnlyTextNodes(listNodes[i])) return false;
+	}
+	return true;
+}
+
+
 /**
  * This method is responsible for reading block elements
  * It creates an element and inserts it into a section
@@ -150,6 +164,20 @@ function processElementBlock(node, filePath, idsectionselected)
  * @param  {String} id of section selected
  * @param  {Object} element to share data
  */
+ImportHTML.prototype.processBlock = function processBlock(element, filePath, blockName, idsectionselected) {
+	var candidates;
+	var backend = application.backend.core.getInstance();
+	var node;
+	for(node = element.firstChild; node; node = node.nextSibling){
+		candidates = [];
+	}
+};
+
+
+
+
+
+
 function processBlock(element, filePath, blockName, idsectionselected,that)
 {
 	var candidates;
@@ -236,20 +264,20 @@ function processBlock(element, filePath, blockName, idsectionselected,that)
  */
 ImportHTML.prototype.processHTML = function processHTML(data, filePath, idsectionselected,options)
 {
-	var _this = this;
-	var opt = $.extend({},options);
-	var controller = application.controller.getInstance();
+	var _this = this,
+		opt = $.extend({},options),
+		controller = application.controller.getInstance(),
+		ui = application.ui.core.getInstance(),
+		invisibleFramework,
+		contentToProcess;
 
-	
-	setTimeout(function(){
-		debugger;
-		var temp = _this.createInvisibleFramework(data);
-		var contenttoprocess = _this.getContentFromHTML(temp,options);
-		processBlock(contenttoprocess,filePath, null,idsectionselected,_this);
-		var ui = application.ui.core.getInstance();
-		_this.destroyInvisibleFramework();
-		ui.loadContent(Cloudbook.UI.selected.attr('data-cbsectionid'));
-	}, 500);
+//	setTimeout(function(){
+	invisibleFramework = _this.createInvisibleFramework(data);
+	contentToProcess = _this.getContentFromHTML(invisibleFramework,options);
+	_this.processBlock(contentToProcess,filePath, null,idsectionselected);
+	_this.destroyInvisibleFramework(invisibleFramework);
+	ui.loadContent(Cloudbook.UI.selected.attr('data-cbsectionid'));
+//	}, 500);
 	controller.renumberProject();
 
 }
@@ -283,17 +311,34 @@ ImportHTML.prototype.getContentFromHTML = function(invisibleFramework, options) 
 
 
 ImportHTML.prototype.createInvisibleFramework = function createInvisibleFramework(data) {
-    var temp = $('<iframe id="tempImportHTML" width="100%" height="100%" ;/>');
-    temp.css("position", "fixed").css("z-index", "-1000");
-    $("body").append(temp);
-    temp.contents().find("html").html(data);
-    $("body").append("<div id='layer' style='z-index:-500;background:#fff; position:fixed; top:0; width:100%;height:100%'></div>");
-    return temp;
+	var invisibleFramework = document.createElement('div'),
+		contentLayer = document.createElement('iframe'),
+		blankLayer = document.createElement('div');
+
+	invisibleFramework.style.width = "100%";
+	invisibleFramework.style.height = "100%";
+	invisibleFramework.style.position = "fixed";
+	invisibleFramework.style.zIndex = "-1000";
+	
+	contentLayer.style.width = "100%";
+	contentLayer.style.height = "100%";
+	contentLayer.style.zIndex = "1";
+
+	blankLayer.style.width = "100%";
+	blankLayer.style.height = "100%";
+	blankLayer.style.zIndex = "3";
+
+	invisibleFramework.appendChild(contentLayer);
+	invisibleFramework.appendChild(blankLayer);
+
+	document.querySelector('body').appendChild(invisibleFramework);
+    contentLayer.contentDocument.querySelector('html').innerHTML = data;
+
+    return invisibleFramework;
 };
 
-ImportHTML.prototype.destroyInvisibleFramework = function destroyInvisibleFramework() {
-	$('#tempImportHTML').remove();
-	$('#layer').remove();
+ImportHTML.prototype.destroyInvisibleFramework = function destroyInvisibleFramework(invisibleFramework) {
+	invisibleFramework.remove();
 };
 CBUtil.createNameSpace('application.importhtml');
 application.importhtml = CBUtil.singleton(ImportHTML);
