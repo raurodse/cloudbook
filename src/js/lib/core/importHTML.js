@@ -132,7 +132,6 @@ function processElementBlock(node, filePath, idsectionselected)
 
 	if(candidates.length > 0)
 	{
-		debugger;
 		var element = new Cloudbook.Actions[candidates[0]]['component']();
 		if(Cloudbook.Actions[candidates[0]].path.indexOf("core/text") != -1)
 			node = extractElements(node, filePath, idsectionselected);
@@ -142,7 +141,6 @@ function processElementBlock(node, filePath, idsectionselected)
 }
 
 function checkOnlyTextNodes(node){
-	debugger;
 	var ignoreNodes = [2,4,5,6,7,8,10,12];
 	if(ignoreNodes.indexOf(node.nodeType) >= 0 || node.nodeType === 3 ) return true;
 	var listNodes = node.childNodes;
