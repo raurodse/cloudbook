@@ -157,7 +157,10 @@ TextBox.prototype.importHTML = function importHTML(node, filePath){
 }
 
 TextBox.prototype.importHTMLRaw = function(node){
- 
+  var parentTag = node.parentNode.tagName;
+  var text = "<"+parentTag+">" + node.textContent + "</" + parentTag +">";
+  TextBox.super_.prototype.importHTML.call(this,node);
+  this.text = text;
 };
 
 TextBox.prototype.triggerAddEditorView = function triggerAddEditorView(jquerycbo,objectcbo) {

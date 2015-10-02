@@ -14,26 +14,22 @@ function ImportHTML(){
  * @param  {Object} node which tag is to be found
  * @result  {Object[]} array of possible candidates
  */
-function getHTMLTags(node)
-{
-	var tag = node.tagName;
-	var listactions = {};
-	var x = Cloudbook.Actions;
-	var keylist = Object.keys(x);
-	var candidates = [];
-	var score = 0;
+ImportHTML.prototype.getCandidateForNode = function getCandidateForNode(node) {
+	var identifierActions = Object.keys(Cloudbook.Actions),
+		score = 0,
+		candidate = null,
+		scoreElement,
+		tempActionObject;
 
-	keylist.forEach(function(key){
-		var aux = new x[key]['component'](); 
-		var scoreElement = aux.HTMLtags(node);
-		if(score < scoreElement)
-		{  
-			candidates = [];
-			candidates.push(key);
+	identifierActions.forEach(function(keyAction){
+		tempActionObject = new Cloudbook.Actions[keyAction]['component'](); 
+		scoreElement = tempActionObject.HTMLtags(node);
+		if(score < scoreElement){  
+			candidate = keyAction;
 			score = scoreElement;
 		}
 	});
-	return candidates;
+	return candidate;
 }
 
 /**
@@ -41,19 +37,15 @@ function getHTMLTags(node)
  * @param  {String} tag to be found
  * @result  {Object[]} array of possible candidates
  */
-function getTextTags()
-{
-	var listactions = {};
-	var x = Cloudbook.Actions;
-	var keylist = Object.keys(x);
-	var candidates = [];
+ImportHTML.prototype.getTextCandidate = function getTextCandidate() {
 
-	keylist.forEach(function(key){
-		var aux = new x[key]['component']();
-		if(x[key]['path'] ==='components/core/text') 
-		candidates.push.apply(candidates, aux.HTMLtagNames());
+	var identifierActions = Object.keys(Cloudbook.Actions),
+		candidate = null;
+
+	identifierActions.forEach(function(keyAction){
+		if(Cloudbook.Actions[keyAction]['path'] ==='components/core/text') candidate = keyAction; 
 	});
-	return candidates;
+	return candidate;
 }
 
 /**
@@ -118,28 +110,6 @@ function processTextBlock(textValue, width, height, top, left, filePath, idsecti
 	processElementBlock(auxNode, filePath, idsectionselected)
 }
 
-/**
- * This method is responsible for processing element blocks
- * It searches the element and inserts it into a section
- * @param  {Object} node to be processed
- * @param  {String} path of the html element
- * @param  {String} id of section selected
- */
-function processElementBlock(node, filePath, idsectionselected)
-{
-	var candidates = getHTMLTags(node);
-	var backend = application.backend.core.getInstance();
-
-	if(candidates.length > 0)
-	{
-		var element = new Cloudbook.Actions[candidates[0]]['component']();
-		if(Cloudbook.Actions[candidates[0]].path.indexOf("core/text") != -1)
-			node = extractElements(node, filePath, idsectionselected);
-		element.importHTML(node, filePath);
-		backend.appendCBObjectIntoSection(element, idsectionselected);
-	}
-}
-
 function checkOnlyTextNodes(node){
 	var ignoreNodes = [2,4,5,6,7,8,10,12];
 	if(ignoreNodes.indexOf(node.nodeType) >= 0 || node.nodeType === 3 ) return true;
@@ -152,29 +122,60 @@ function checkOnlyTextNodes(node){
 	return true;
 }
 
-ImportHTML.prototype.insertRawText = function(node,idsectionselected) {
+/**
+ * This method is responsible for processing element blocks
+ * It searches the element and inserts it into a section
+ * @param  {Object} node to be processed
+ * @param  {String} path of the html element
+ * @param  {String} id of section selected
+ */
+ImportHTML.prototype.importNode = function importNode(node, candidate, filePath, idsectionselected) {
+	
 	var backend = application.backend.core.getInstance();
-	var element = new Cloudbook.Actions[]['component']();
+	var element = new Cloudbook.Actions[candidate]['component']();
+	element.importHTML(node, filePath);
+	backend.appendCBObjectIntoSection(element, idsectionselected);
+}
+
+ImportHTML.prototype.importRawTextNode = function(node,idsectionselected) {
+	var backend = application.backend.core.getInstance();
+	var element = new Cloudbook.Actions[this.getTextCandidate()]['component']();
 	element.importHTMLRaw(node);
 	backend.appendCBObjectIntoSection(element,idsectionselected);
 };
 
 ImportHTML.prototype.processBlock = function processBlock(element, filePath, idsectionselected) {
 	var backend = application.backend.core.getInstance();
+	var ignoreNodes = [2,4,5,6,7,8,10,12];
 	var node;
+	var candidate;
 	for(node = element.firstChild; node; node = node.nextSibling){
-		var ignoreNodes = [2,4,5,6,7,8,10,12];
+		
 		if(ignoreNodes.indexOf(node.nodeType) >= 0) continue;
+
 		if(node.nodeType === 9 || node.nodeType === 11 ){
 			this.processBlock(node,filePath,idsectionselected);
 			continue;	
-		} 
-		if(node.nodeType === 3){
-			this.insertRawText(node, idsectionselected);
-			continue;	
 		}
 
+		if(node.nodeType === 3){
+			this.importRawTextNode(node, idsectionselected);
+			continue;	
+		}
 		// 1 Element Node
+		
+		// Search candidate to create element
+		// If candidate isn't null create this element
+		candidate = this.getCandidateForNode(node);
+		
+		if(candidate === null && checkOnlyTextNodes(node)) candidate = this.getTextCandidate();
+
+		if (candidate !== null){
+			this.importNode(node,candidate,filePath,idsectionselected);
+			continue;
+		}
+		// default call process Block
+		this.processBlock(node,filePath,idsectionselected);
 	}
 };
 
