@@ -152,6 +152,32 @@ function checkOnlyTextNodes(node){
 	return true;
 }
 
+ImportHTML.prototype.insertRawText = function(node,idsectionselected) {
+	var backend = application.backend.core.getInstance();
+	var element = new Cloudbook.Actions[]['component']();
+	element.importHTMLRaw(node);
+	backend.appendCBObjectIntoSection(element,idsectionselected);
+};
+
+ImportHTML.prototype.processBlock = function processBlock(element, filePath, idsectionselected) {
+	var backend = application.backend.core.getInstance();
+	var node;
+	for(node = element.firstChild; node; node = node.nextSibling){
+		var ignoreNodes = [2,4,5,6,7,8,10,12];
+		if(ignoreNodes.indexOf(node.nodeType) >= 0) continue;
+		if(node.nodeType === 9 || node.nodeType === 11 ){
+			this.processBlock(node,filePath,idsectionselected);
+			continue;	
+		} 
+		if(node.nodeType === 3){
+			this.insertRawText(node, idsectionselected);
+			continue;	
+		}
+
+		// 1 Element Node
+	}
+};
+
 
 /**
  * This method is responsible for reading block elements
@@ -162,20 +188,6 @@ function checkOnlyTextNodes(node){
  * @param  {String} id of section selected
  * @param  {Object} element to share data
  */
-ImportHTML.prototype.processBlock = function processBlock(element, filePath, blockName, idsectionselected) {
-	var candidates;
-	var backend = application.backend.core.getInstance();
-	var node;
-	for(node = element.firstChild; node; node = node.nextSibling){
-		candidates = [];
-	}
-};
-
-
-
-
-
-
 function processBlock(element, filePath, blockName, idsectionselected,that)
 {
 	var candidates;
@@ -193,7 +205,7 @@ function processBlock(element, filePath, blockName, idsectionselected,that)
 				    var left = elementPosition.left;
 				    var top = elementPosition.top;
 				    var text = "";
-				    debugger;
+
 					text = processBlock(node, filePath, node.tagName,idsectionselected,that);
 					if(node.parentElement.tagName =="HEADER" || node.parentElement.tagName =="FOOTER" ||
 						node.parentElement.nodeName == "BODY" || (node.parentElement.parentElement != null && 
@@ -272,7 +284,7 @@ ImportHTML.prototype.processHTML = function processHTML(data, filePath, idsectio
 //	setTimeout(function(){
 	invisibleFramework = _this.createInvisibleFramework(data);
 	contentToProcess = _this.getContentFromHTML(invisibleFramework,options);
-	_this.processBlock(contentToProcess,filePath, null,idsectionselected);
+	_this.processBlock(contentToProcess,filePath, idsectionselected);
 	_this.destroyInvisibleFramework(invisibleFramework);
 	ui.loadContent(Cloudbook.UI.selected.attr('data-cbsectionid'));
 //	}, 500);

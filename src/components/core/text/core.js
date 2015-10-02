@@ -156,6 +156,10 @@ TextBox.prototype.importHTML = function importHTML(node, filePath){
     }
 }
 
+TextBox.prototype.importHTMLRaw = function(node){
+ 
+};
+
 TextBox.prototype.triggerAddEditorView = function triggerAddEditorView(jquerycbo,objectcbo) {
 	TextBox.super_.prototype.triggerAddEditorView.call(this,jquerycbo,objectcbo);
 	jquerycbo.on('drag',function(event,ui){toolbarposition(ui.offset)});
