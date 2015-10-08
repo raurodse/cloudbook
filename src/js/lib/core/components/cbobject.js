@@ -295,9 +295,15 @@ CBObject.prototype.enableEditable = function enableEditable(e){
 }
 
 CBObject.prototype.importHTML = function importHTML(node) {
-	var elementPosition = node.getBoundingClientRect();
-	this.position = [elementPosition.left,elementPosition.top];
-	this.size = [elementPosition.width,elementPosition.height];
+	try{
+		var elementPosition = node.getBoundingClientRect();
+		this.position = [elementPosition.left,elementPosition.top];
+		this.size = [elementPosition.width,elementPosition.height];
+	}
+	catch(e){
+		debugger;
+		console.log(e);
+	}
 	/*
 	try{
 

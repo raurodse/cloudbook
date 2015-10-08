@@ -4,9 +4,6 @@
  * it loads TextTags
  */
 function ImportHTML(){
-	this.topValue = 0;
-	this.blockText = document.createElement('div');
-	this.textCandidates = getTextTags();
 }
 
 /**
@@ -48,78 +45,33 @@ ImportHTML.prototype.getTextCandidate = function getTextCandidate() {
 	return candidate;
 }
 
-/**
- * This method is responsible for extracting non-Text elements and processing them
- * It searches elements, process them and removes them from the code
- * @param  {Object} text to be processed
- * @param  {String} path of the element
- * @param  {String} id of section selected
- * @result  {String} text processed
-
- */
-function extractElements(element, filePath, idsectionselected){
-	debugger;
-	try{
-		$(element).find("img, iframe, video, audio, object").each(function(){
-		  	processElementBlock($(this)[0], filePath, idsectionselected);
-		  	this.outerHTML = "";
-		});
-
-		while(element.indexOf("<img") != -1)
-			element = element.replace(element.substring(element.indexOf("<img"), element.indexOf(">", element.indexOf("<img"))+1), "");
-
-		while(element.indexOf("<iframe") != -1)
-			element = element.replace(element.substring(element.indexOf("<iframe"), element.indexOf("</iframe>")+9), "");
-
-		while(element.indexOf("<video") != -1)
-			element = element.replace(element.substring(element.indexOf("<video"), element.indexOf("</video>")+8), "");
-
-		while(element.indexOf("<audio") != -1)
-			element = element.replace(element.substring(element.indexOf("<audio"), element.indexOf("</audio>")+8), "");
-
-		while(element.indexOf("<object") != -1)
-			element = element.replace(element.substring(element.indexOf("<object"), element.indexOf("</object>")+9), "");
-	}catch(e){}
-	return element;
-}
-
-/**
- * This method is responsible for processing Text blocks
- * It creates an span element and insert it into a section
- * Before it process and delete images inside the text
- * @param  {String} content of the element
- * @param  {String} width of the element
- * @param  {String} height of the element
- * @param  {String} top of the element
- * @param  {String} left of the element
- * @param  {String} path of the imported project
- * @param  {String} id of section selected
- */
-function processTextBlock(textValue, width, height, top, left, filePath, idsectionselected){
-
-	var backend = application.backend.core.getInstance();
-
-	textValue = extractElements(textValue, filePath, idsectionselected);
-	var auxNode = $('<SPAN></SPAN>');
-	auxNode.innerHTML = textValue;
-	auxNode.tagName = 'SPAN';
-	auxNode.clientWidth = width;
-	auxNode.clientHeight = height;
-	auxNode.offsetTop = top;
-	auxNode.offsetLeft = left;
-	processElementBlock(auxNode, filePath, idsectionselected)
-}
 
 function checkOnlyTextNodes(node){
+	debugger;
 	var ignoreNodes = [2,4,5,6,7,8,10,12];
 	if(ignoreNodes.indexOf(node.nodeType) >= 0 || node.nodeType === 3 ) return true;
-	var listNodes = node.childNodes;
-	var i;
-	if (listNodes.length === 0) return false;
-	for(i = 0; i < listNodes.length ; i++){
-		if (!checkOnlyTextNodes(listNodes[i])) return false;
+	if(node.nodeType === 9 || node.nodeType === 11 ) return checkOnlyTextNodes(node);
+	var tagsValidVoid = ['a','abbr','acronym','address','article','aside','b','bdi','bdo',
+						 'big','blockquote','body','br','caption','center','cite','code','col',
+						 'datalist','dd','del','details','dfn','dialog','dir','div','dl','dt',
+						 'em','fieldset','figcaption','figure','font','footer','form','h1','h2',
+						 'h3','h4','h5','h6','head','header','hr','html','i','input','ins','kbd',
+						 'keygen','label','legend','li','main','mark','meter','nav','noframes',
+						 'ol','optgroup','option','output','p','pre','progress','q','rp','rt',
+						 'ruby','s','samp','section','select','small','span','strike','strong',
+						 'sub','summary','sup','table','tbody','td','textarea','tfoot','th',
+						 'thead','time','title','tr','track','tt','u','ul','var','wbr'];
+	var invalidTags = ['table','tr'];
+	if(invalidTags.indexOf(node.tagName.toLowerCase())) return false;
+	if(tagsValidVoid.indexOf(node.tagName.toLowerCase()) >= 0 & node.innerHTML === "") return true;
+	if(node.childNodes === 0) return false;
+	for(var i = 0; i < node.childNodes.length ; i++){
+		if(!checkOnlyTextNodes(node.childNodes[i])) return false;
 	}
 	return true;
+	//bucle que recorre todos los hijos y comprueba si alguno no es texto
+
+	// 1 Elements node
 }
 
 /**
@@ -140,8 +92,10 @@ ImportHTML.prototype.importNode = function importNode(node, candidate, filePath,
 ImportHTML.prototype.importRawTextNode = function(node,idsectionselected) {
 	var backend = application.backend.core.getInstance();
 	var element = new Cloudbook.Actions[this.getTextCandidate()]['component']();
-	element.importHTMLRaw(node);
-	backend.appendCBObjectIntoSection(element,idsectionselected);
+	if(node.data.trim() !== ''){
+		element.importHTMLRaw(node);
+		backend.appendCBObjectIntoSection(element,idsectionselected);
+	}
 };
 
 ImportHTML.prototype.processBlock = function processBlock(element, filePath, idsectionselected) {
@@ -179,90 +133,6 @@ ImportHTML.prototype.processBlock = function processBlock(element, filePath, ids
 	}
 };
 
-
-/**
- * This method is responsible for reading block elements
- * It creates an element and inserts it into a section
- * @param  {String} content of the HTML file
- * @param  {String} path of the html element
- * @param  {String} name of block element
- * @param  {String} id of section selected
- * @param  {Object} element to share data
- */
-function processBlock(element, filePath, blockName, idsectionselected,that)
-{
-	var candidates;
-	var backend = application.backend.core.getInstance();
-	for(var node = element.firstChild; node; node = node.nextSibling){
-		candidates = [];
-		if(node.tagName !== undefined)
-		{
-			switch(node.tagName)
-			{
-				case "SECTION":case "ARTICLE":case "NAV":case "DIV": case "ASIDE":case "MAIN":
-					var elementPosition = node.getBoundingClientRect();
-					var width = elementPosition.width;
-				    var height = elementPosition.height;
-				    var left = elementPosition.left;
-				    var top = elementPosition.top;
-				    var text = "";
-
-					text = processBlock(node, filePath, node.tagName,idsectionselected,that);
-					if(node.parentElement.tagName =="HEADER" || node.parentElement.tagName =="FOOTER" ||
-						node.parentElement.nodeName == "BODY" || (node.parentElement.parentElement != null && 
-							node.parentElement.parentElement.nodeName == "BODY") || (node.parentElement.parentElement != null &&
-					    node.parentElement.parentNode.nodeName == "HTML") || node.parentElement.tagName =="HTML")
-					{
-						if(text != ""){
-							processTextBlock(text, width, height, top, left, filePath, idsectionselected);
-							that.blockText = document.createElement("div");
-							text = "";
-						}
-					}
-				break;
-				case "HEADER": case "FOOTER":
-					processBlock(node, filePath, null,idsectionselected,that);
-				break;
-				default:
-					if( ($.inArray(node.tagName,that.textCandidates) > -1 )&& (blockName != null))
-					{
-						if(node.children.length ==1 && node.children[0].nodeName == "IMG" && node.childNodes.length == 1)
-							processElementBlock(node.children[0], filePath, idsectionselected);
-						else
-							that.blockText.appendChild(node);
-					}
-					else
-					{
-						if(node.children.length ==1 && node.children[0].nodeName == "IMG" && node.childNodes.length == 1)
-							processElementBlock(node.children[0], filePath, idsectionselected);
-						else
-							processElementBlock(node, filePath, idsectionselected);
-					}
-				break;
-			}
-		}
-		else
-		{
-			if(node.nodeType != 8 && node.nodeValue.trim().length > 0)
-			{
-				if(blockName != null){
-					var auxNode = document.createElement('span');
-					auxNode.innerHTML = node.nodeValue;
-					that.blockText.appendChild(auxNode);
-					that.blockText.appendChild(document.createElement('br'));
-				}
-				else
-				{
-					processTextBlock(node.nodeValue, width, height, top, left, filePath, idsectionselected);
-					that.blockText = document.createElement('div');
-					text = "";
-				}
-			}
-		}
-	}
-	if(blockName != null)
-		return that.blockText;
-}
 /**
  * This method is responsible for reading HTML main block contents
  * It creates one div and one iframe to load content and process content, 
@@ -295,23 +165,24 @@ ImportHTML.prototype.processHTML = function processHTML(data, filePath, idsectio
 
 ImportHTML.prototype.getContentFromHTML = function(invisibleFramework, options) {
 	var contenttoprocess;
-	var contentFiltredBySelector = invisibleFramework.contents().find(options.idtoprocess)[0];
-	var allContentFromInvisibleFramework = invisibleFramework.contents().get()[0].children[0];
+	var contentFromInvisibleFramework = $(invisibleFramework).children('iframe');
+	var contentFiltredBySelector = contentFromInvisibleFramework.contents().find(options.idtoprocess)[0];
+	var allContentFromInvisibleFramework = contentFromInvisibleFramework.contents().get()[0].children[0];
     if (options) {
         if (options.idtoprocess) {
-            if (invisibleFramework.contents().find(options.idtoprocess)[0] === undefined) {
+            if (contentFromInvisibleFramework.contents().find(options.idtoprocess)[0] === undefined) {
                 if (data.indexOf(options.idtoprocess.replace("#", "")) !== -1) {
                     contenttoprocess = allContentFromInvisibleFramework;
                 }
             } else {
-                contenttoprocess = invisibleFramework.contents().find(options.idtoprocess)[0];
+                contenttoprocess = contentFromInvisibleFramework.contents().find(options.idtoprocess)[0];
             }
         }
         if (options.isELP) {
             contenttoprocess = allContentFromInvisibleFramework.childNodes[1];
         }
     } else {
-        if (invisibleFramework.contents().find("body").length === 0) {
+        if (contentFromInvisibleFramework.contents().find("body").length === 0) {
             contenttoprocess = allContentFromInvisibleFramework;
         } else {
             contenttoprocess = allContentFromInvisibleFramework.childNodes[2];
